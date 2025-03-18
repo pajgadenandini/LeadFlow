@@ -6,12 +6,14 @@ import { validateLoginForm } from "../../utils/validators";
 import { api } from "../../services/api";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
+import { useGoogleLogin } from '@react-oauth/google';
+import { authService } from '../../services/auth.service';
 
 // Define types for form data and errors
 
 const LogIn = () => {
   const navigate = useNavigate();
-  const {login} = useAuth();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState<LogInFormData>({
     email: "",
@@ -67,14 +69,14 @@ const LogIn = () => {
           });
 
 
-          toast.success(apiResponse.message || "Login Successful",{duration:5000,position:"bottom-left"})
+          toast.success(apiResponse.message || "Login Successful", { duration: 5000, position: "bottom-left" })
 
           // Navigate to /dashboard 
           navigate("/dashboard");
 
           // }, 3000);
         } else if (apiResponse.type == "email") {
-          toast.error("Invalid Email!",{duration:5000,position:"bottom-left"})
+          toast.error("Invalid Email!", { duration: 5000, position: "bottom-left" })
           setErrors(
             {
               email: apiResponse.error || "Invalid Email",
@@ -82,7 +84,7 @@ const LogIn = () => {
             }
           )
         } else if (apiResponse.type == "password") {
-          toast.error("Invalid Password!",{duration:5000,position:"bottom-left"})
+          toast.error("Invalid Password!", { duration: 5000, position: "bottom-left" })
           setErrors(
             {
               email: "",
@@ -90,11 +92,11 @@ const LogIn = () => {
             }
           )
         } else {
-          toast.error("Failed to Login, Try Again.",{duration:5000,position:"bottom-left"})
+          toast.error("Failed to Login, Try Again.", { duration: 5000, position: "bottom-left" })
           setLogInError(apiResponse.error || "Failed to Login, Try Again.")
         }
       } catch (error) {
-        toast.error("Failed to Login, Try Again.",{duration:5000,position:"bottom-left"})
+        toast.error("Failed to Login, Try Again.", { duration: 5000, position: "bottom-left" })
         setLogInError("Error logging User,Try Again!")
         console.error("Error logging User", error);
       } finally {
@@ -107,6 +109,49 @@ const LogIn = () => {
     setShowPassword(!showPassword);
   };
 
+  // oauth code
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const userInfo = await fetch(
+          'https://www.googleapis.com/oauth2/v3/userinfo',
+          {
+            headers: {
+              'Authorization': `Bearer ${tokenResponse.access_token}`,
+              'Accept': 'application/json'
+            },
+          }
+        ).then(res => res.json());
+
+        const authResponse = await authService.handleOAuthSignIn({
+          email: userInfo.email,
+          name: userInfo.name,
+          image: userInfo.picture,
+          provider: 'google'
+        });
+
+        if (authResponse.success && authResponse.token) {
+          login(authResponse.token, authResponse.user);
+          navigate('/dashboard');
+          toast.success('Successfully logged in!');
+        } else {
+          toast.error('Failed to authenticate');
+        }
+      } catch (error) {
+        console.log(error)
+        toast.error('Authentication failed');
+      }
+    },
+    onError: (error) => {
+      console.error('Google OAuth error:', error);
+      toast.error('Google login failed');
+    },
+    flow: 'implicit',
+  });
+  const handleGoogleLogin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    googleLogin();
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -238,6 +283,18 @@ const LogIn = () => {
             </div>
           </form>
 
+          <div className="mt-8 text-center border-t border-gray-200 pt-6">
+            <div className="space-y-4 mb-6">
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-50 cursor-pointer"
+              >
+                <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
+                Continue with Google
+              </button>
+              {/* Add similar buttons for GitHub and Microsoft */}
+            </div>
+          </div>
 
           <div className="mt-8 text-center border-t border-gray-200 pt-6">
             <p className="text-sm text-gray-600">
