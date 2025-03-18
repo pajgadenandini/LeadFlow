@@ -1,0 +1,47 @@
+image: node:22
+ 
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Install
+          caches:
+            - node
+          script:
+            - echo "Installing dependencies..."
+            - npm install --force
+ 
+      - parallel:
+          - step:
+              name: Run build
+              script:
+                - echo "Building project..."
+                - npm install --force
+                - npm run build
+                - apt-get update && apt-get install -y zip
+                - zip -r app-$BITBUCKET_BUILD_NUMBER.zip build package.json package-lock.json
+              artifacts:
+                - "*.zip"
+ 
+          - step:
+              name: Security Scan
+              script:
+                - echo "Perform a security scan for sensitive data..."
+                - echo "See https://bitbucket.org/product/features/pipelines/integrations#security"
+                - apt-get update && apt-get install -y git-secrets
+                # Example usage: git secrets --scan
+ 
+      - step:
+          name: Deploy to Production
+          trigger: manual          
+          deployment: Production
+          script:
+            - pipe: atlassian/azure-web-apps-deploy:1.0.1
+              variables:
+                AZURE_APP_ID: $AZURE_APP_ID
+                AZURE_PASSWORD: $AZURE_PASSWORD
+                AZURE_TENANT_ID: $AZURE_TENANT_ID
+                AZURE_RESOURCE_GROUP: $AZURE_RESOURCE_GROUP
+                AZURE_APP_NAME: $AZURE_APP_NAME
+                ZIP_FILE: app-$BITBUCKET_BUILD_NUMBER.zip        
+                DEBUG: 'true'  
