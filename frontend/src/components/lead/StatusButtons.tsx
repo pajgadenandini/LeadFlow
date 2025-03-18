@@ -56,6 +56,22 @@ export const StatusButtons: React.FC<StatusButtonsProps> = ({
     return statusIndex < currentIndex;
   };
 
+  const getButtonStyles = (status: LeadStatus) => {
+    const isActive = status === currentStatus;
+    const isDisabled = isStatusDisabled(status);
+
+    if (isActive) {
+      // Active status - filled with indigo color and white text
+      return "bg-indigo-500 text-white font-bold";
+    } else if (isDisabled) {
+      // Disabled status
+      return "bg-gray-100 text-gray-400";
+    } else {
+      // Available status
+      return "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50";
+    }
+  };
+
   return (
     <>
       <Card title="Lead Status" className="mb-6">
@@ -63,17 +79,15 @@ export const StatusButtons: React.FC<StatusButtonsProps> = ({
           {statusOptions.map((status) => {
             const isActive = status === currentStatus;
             const isDisabled = isStatusDisabled(status);
-
-            let buttonVariant: 'primary' | 'secondary' | 'outline' = 'outline';
-            if (isActive) buttonVariant = 'primary';
+            const buttonStyles = getButtonStyles(status);
 
             return (
               <Button
                 key={status}
-                variant={buttonVariant}
-                disabled={isDisabled || isActive || isUpdating}
+                variant="custom" // Using custom variant to override with our styles
+                disabled={isDisabled || isUpdating}
                 onClick={() => handleStatusClick(status)}
-                className={`flex-1 ${isActive ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+                className={`flex-1 py-2 px-4 rounded ${buttonStyles}`}
               >
                 {status}
               </Button>
