@@ -79,11 +79,6 @@ export const LeadProfile: React.FC<LeadProfileProps> = ({ lead, isLoading }) => 
             <span className="text-sm">Source: {lead.source}</span>
           </div>
         </div>
-        
-        <div className="mt-6 w-full">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Description</h3>
-          <p className="text-sm text-gray-600">{lead.description}</p>
-        </div>
       </div>
     </Card>
   );
