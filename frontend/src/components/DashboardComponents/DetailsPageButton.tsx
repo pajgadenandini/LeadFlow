@@ -17,7 +17,7 @@ const DetailsPageButton = ({ onClick }: { onClick: () => void }) => {
     <button
       className={`
         relative flex items-center justify-between 
-        min-w-[90px] px-3 py-2
+        min-w-[70px] px-2 py-2
         bg-gradient-to-r from-blue-500 to-purple-600 
         text-white 
         rounded-full 
@@ -40,13 +40,13 @@ const DetailsPageButton = ({ onClick }: { onClick: () => void }) => {
           transition-transform duration-300 ease-in-out
         `}
       />
-      <span className="relative z-10 font-medium text-sm whitespace-nowrap">
+      <span className="relative z-10 font-medium text-[10px] whitespace-nowrap">
         Details
       </span>
       <ChevronRight
         className={`
           relative z-10 
-          ml-2 w-4 h-4
+          ml-0 w-3 h-3
           transition-transform duration-300 ease-in-out
           ${isHovered ? 'translate-x-1' : ''}
         `}

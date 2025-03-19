@@ -77,7 +77,7 @@ export default function Dashboard() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
 
-        <div className="w-full max-w-6xl mx-auto px-10 sm:px-16 md:px-24 lg:px-32 xl:px-10 py-4 flex flex-col flex-grow">
+        <div className="w-full max-w-6xl mx-auto px-10 sm:px-16 md:px-0 lg:px-32 xl:px-10 py-4 flex flex-col flex-grow">
 
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
             <h2

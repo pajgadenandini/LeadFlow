@@ -17,6 +17,9 @@ export default function useLeads(
   const fetchLeads = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    //introducing delay to show lazy loading animation
+    await new Promise(resolve => setTimeout(resolve, 500));
     try {
       const data = await fetchLeadsApi(page, searchTerm, sortBy, sortOrder, filters);
       setLeads(data.leads);

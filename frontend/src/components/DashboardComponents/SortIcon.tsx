@@ -6,6 +6,7 @@ interface SortIconProps {
   className?: string;
   initialSortDirection?: "asc" | "desc";
   label: string;
+  align?: "left" | "center"; // <-- New optional prop for alignment
 }
 
 const SortIcon: React.FC<SortIconProps> = ({
@@ -13,6 +14,7 @@ const SortIcon: React.FC<SortIconProps> = ({
   className = "",
   initialSortDirection = "asc",
   label,
+  align = "center", // Default alignment is center if not specified
 }) => {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">(initialSortDirection);
 
@@ -22,10 +24,16 @@ const SortIcon: React.FC<SortIconProps> = ({
     onSort(newDirection);
   };
 
+  // Alignment handling classes
+  const alignmentClass =
+    align === "left"
+      ? "justify-start text-left"
+      : "justify-center text-center";
+
   return (
     <button
       onClick={handleSort}
-      className={`flex items-center gap-1 cursor-pointer p-2 rounded-md hover:bg-gray-200 transition-all ${className}`}
+      className={`flex items-center gap-1 cursor-pointer p-2 rounded-md hover:bg-gray-200 transition-all w-full ${alignmentClass} ${className}`}
       aria-label={`Sort by ${label}`}
     >
       <span className="font-medium">{label}</span>
