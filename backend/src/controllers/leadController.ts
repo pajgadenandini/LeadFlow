@@ -47,13 +47,13 @@ export const getLeads = async (req: Request, res: Response): Promise<void> => {
       lastActivityTo as string
     );
 
-    // Return the data
     res.status(200).json({
-      totalItems: result.totalItems,
-      totalPages: result.totalPages,
-      currentPage: result.currentPage,
-      leads: result.leads
+      ...result,
+      Message: result.leads.length ? "Data is served successfully" : "No leads found",
+      dataSource: result.dataSource, // Indicate source
     });
+
+
   } catch (error) {
     console.error("Error fetching leads:", error);
     res.status(500).json({ error: "Failed to fetch leads" });
@@ -87,6 +87,7 @@ export const createLead = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: "Failed to create lead" });
   }
 };
+
 
 /**
  * Controller for deleting a lead by ID.
