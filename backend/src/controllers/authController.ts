@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { loginUser, registerUser } from "../services/authServices";
+import { loginUser, oauthService, registerUser } from "../services/authServices";
 import logger from "../logger";
 
 export const registerHandler = async (req: Request, res: Response) => {
@@ -44,3 +44,20 @@ export const validateToken = (req: Request, res: Response) => {
     res.status(200).json({ success: false, message: "Invalid Token" });
 };
 
+
+export const oauthCallback = async (req: Request, res: Response) => {
+  try {
+    const { email, name, provider, image } = req.body;
+
+    const jsonResp = await oauthService(email, name, provider, image);
+
+    // Create and assign a token
+    res.status(200).json(jsonResp);
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Authentication failed'
+    });
+  }
+};
