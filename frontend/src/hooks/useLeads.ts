@@ -7,7 +7,8 @@ export default function useLeads(
   searchTerm: string,
   sortBy: string = "updatedAt",
   sortOrder: "asc" | "desc" = "desc",
-  filters: LeadFilters
+  filters: LeadFilters,
+  append: boolean = false // New parameter to allow appending for infinite scrolling
 ) {
   const [leads, setLeads] = useState<ILead[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,14 +23,16 @@ export default function useLeads(
     await new Promise(resolve => setTimeout(resolve, 500));
     try {
       const data = await fetchLeadsApi(page, searchTerm, sortBy, sortOrder, filters);
-      setLeads(data.leads);
+      await new Promise((resolve) => setTimeout(resolve, 350)); // Add delay for smooth loading
+
+      setLeads((prevLeads) => (append ? [...prevLeads, ...data.leads] : data.leads)); // Append if needed
       setTotalPages(data.totalPages);
     } catch (error) {
       setError("Failed to fetch leads");
     } finally {
       setLoading(false);
     }
-  }, [page, searchTerm, sortBy, sortOrder, filters]);
+  }, [page, searchTerm, sortBy, sortOrder, filters, append]);
 
   useEffect(() => {
     fetchLeads();

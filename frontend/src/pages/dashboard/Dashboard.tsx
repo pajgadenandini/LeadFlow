@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import DataTable from "../../components/DashboardComponents/DataTable";
 import SearchBar from "../../components/DashboardComponents/SearchBar";
@@ -12,6 +12,8 @@ import DeleteConfirmationDialog from "../../components/DashboardComponents/Delet
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 
+import Loader from "@/components/ui/Loader";
+
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,17 +24,29 @@ export default function Dashboard() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const observerRef = useRef<HTMLDivElement | null>(null); // Ref for the infinite scroll trigger
+
+  // Detect if the screen size changes
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const memoizedFilters = useMemo(
     () => ({ ...filters, status: statusFilter }),
     [filters, statusFilter]
   );
 
+  // Fetch leads
   const { leads, loading, error, totalPages, refetch } = useLeads(
     currentPage,
     searchTerm,
     sortBy,
     sortOrder,
-    memoizedFilters
+    memoizedFilters,
+    isMobile // If mobile, append leads instead of replacing them
   );
 
   useEffect(() => {
@@ -44,6 +58,23 @@ export default function Dashboard() {
       setCurrentPage(totalPages);
     }
   }, [totalPages]);
+
+  // Handle infinite scrolling
+  useEffect(() => {
+    if (!isMobile || !observerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && currentPage < totalPages) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [isMobile, loading, currentPage, totalPages]);
 
   const handleSortChange = (field: string) => {
     setSortOrder((prevSortOrder) =>
@@ -80,27 +111,18 @@ export default function Dashboard() {
         <div className="w-full max-w-6xl mx-auto px-10 sm:px-16 md:px-0 lg:px-32 xl:px-10 py-4 flex flex-col flex-grow">
 
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <h2
-              className="pl-4 text-2xl font-semibold bg-gradient-to-r from-blue-500 to-purple-600 
-             bg-[length:200%_100%] animate-gradient 
-             text-transparent bg-clip-text 
-             transition-all duration-300 tracking-wide"
-              aria-label="Lead Dashboard"
-            >
-              Lead Dashboard
-            </h2>
-
-            <NewLeadButton aria-label="Add new lead" />
+            <h2 className="text-2xl font-semibold">Lead Dashboard</h2>
+            <NewLeadButton />
+          </div>
+          <div className="flex flex-wrap items-center gap-4 w-full mb-6">
+            <div className="flex-grow">
+              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            
+            <FilterLeads onApplyFilters={setFilters} onResetFilters={() => setFilters({})} aria-label="Filter leads" />
+          </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full mb-6">
-            <div className="flex flex-row items-center gap-2 w-full md:w-1/2">
-              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} aria-label="Search leads" />
-              <FilterLeads onApplyFilters={setFilters} onResetFilters={() => setFilters({})} aria-label="Filter leads" />
-            </div>
-          </div>
-
-
+          {/* Show infinite scroll for mobile, pagination for desktop */}
           <DataTable
             data={loading ? [] : leads}
             onDelete={confirmDelete}
@@ -111,28 +133,20 @@ export default function Dashboard() {
             onStatusFilterChange={setStatusFilter}
           />
 
-          <div className="mt-4 flex justify-center w-full">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              disabled={loading}
-            />
-          </div>
-
-          {!loading && leads.length === 0 && (
-            <div className="text-center text-gray-500 mt-4">
-              No records present
+          {!isMobile ? (
+            <div className="mt-4 flex justify-center w-full">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} disabled={loading} />
+            </div>
+          ) : (
+            <div ref={observerRef} className="h-10 w-full flex justify-center items-center">
+              {loading && <Loader/>}
             </div>
           )}
 
-          <ChatbotIcon />
+          {!loading && leads.length === 0 && <div className="text-center text-gray-500 mt-4">No records present</div>}
 
-          <DeleteConfirmationDialog
-            open={openConfirm}
-            onClose={() => setOpenConfirm(false)}
-            onConfirm={handleDeleteConfirmed}
-          />
+          <ChatbotIcon />
+          <DeleteConfirmationDialog open={openConfirm} onClose={() => setOpenConfirm(false)} onConfirm={handleDeleteConfirmed} />
         </div>
       </div>
 
