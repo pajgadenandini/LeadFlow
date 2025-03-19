@@ -3,14 +3,15 @@ import { LeadModel } from "../models/leadModel";
 import { ActivityModel } from "../models/activityModel";
 import { OPENAI_KEY } from "../env";
 import { QueryTypes } from "sequelize";
+import { getChatContext, saveChatContext } from "./chatContextService";
 
 const openai = new OpenAI({ apiKey: OPENAI_KEY });
 
 let contentMessage: string = "";
 
-export const AIResponse = async (userQuery: string): Promise<string> => {
+export const AIResponse = async (userQuery: string, sessionId: string): Promise<string> => {
   try {
-    const greetings = [
+    const greetings = [ 
       "hello",
       "hi",
       "hey",
@@ -29,11 +30,16 @@ export const AIResponse = async (userQuery: string): Promise<string> => {
       return "Hello! How can I assist you with your company leads today?";
     }
 
+    // Step 1: Retrieve Context History for the session
+    const chatHistory = await getChatContext(sessionId);
+
     // Step 2: Generate SQL Query from User Query
-    const sqlQuery = await generateSQLQuery(userQuery);
+    const sqlQuery = await generateSQLQuery(userQuery); 
 
     if (!sqlQuery) {
-      contentMessage = userQuery;
+      contentMessage = ` Previous conversation history: ${JSON.stringify(chatHistory, null, 2)}
+       **User Query:** 
+        ${userQuery}`;
     } else {
       // Step 3: Execute the Generated SQL Query
       const result = await executeSQLQuery(sqlQuery);
@@ -41,6 +47,9 @@ export const AIResponse = async (userQuery: string): Promise<string> => {
         return "No relevant data found.";
       }
       contentMessage = `You are an AI assistant providing insights about company leads.  
+
+      Previous conversation history: ${JSON.stringify(chatHistory, null, 2)}
+
       Below is the SQL query generated to fetch the relevant data from the database:  
 
       **SQL Query:**  
@@ -58,13 +67,14 @@ export const AIResponse = async (userQuery: string): Promise<string> => {
 
     // Step 4: Send Query and Context to OpenAI
     const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
           content:
             "You are a helpful AI assistant providing insights about company leads.",
         },
+        ...chatHistory, // Include previous chat context
         {
           role: "user",
           content: contentMessage,
@@ -72,7 +82,19 @@ export const AIResponse = async (userQuery: string): Promise<string> => {
       ],
     });
 
-    return aiResponse.choices[0].message.content || "No response from AI.";
+    const aiMessage = aiResponse.choices[0].message.content || "No response from AI.";
+
+    // Step 5: Store Updated Context for Next Message
+    await saveChatContext(sessionId, {
+      role: "user",
+      content: userQuery,
+    });
+    await saveChatContext(sessionId, {
+      role: "assistant",
+      content: aiMessage,
+    });
+
+    return aiMessage;
   } catch (error) {
     console.error("Error processing AI response:", error);
     return "An error occurred while processing your request.";
