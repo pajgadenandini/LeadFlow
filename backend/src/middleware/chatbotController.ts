@@ -19,7 +19,7 @@ export const getAIResponse = async (
     }
 
     // Calls service layer function to get AI response
-    const response = await AIResponse(userQuery);
+    const response = await AIResponse(userQuery, req.user?.id.toString() || "1");
 
     res.json({ response });
   } catch (error) {
