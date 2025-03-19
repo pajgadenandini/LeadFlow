@@ -11,34 +11,47 @@ import { LandingPage } from "./pages/landing";
 import NewLeadForm from "./pages/NewLeadForm";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import PreventedRoutes from "./utils/PreventedRoutes";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function App() {
   const { isLoggedIn } = useAuth(); // Get the authentication status
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  if (!clientId) {
+    console.error('Google Client ID is not defined in environment variables');
+    return null;
+  }
+
+  
   return (
-    <BrowserRouter>
-      <Toaster position="bottom-left" />
-      <div className="min-h-screen bg-gray-50">
-        <main>
-          <Routes>
-            {/* Landing Page as the default route */}
-            <Route path="/" element={<LandingPage />} />
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
 
-            <Route element={<ProtectedRoutes />}>
-              {/* Protected routes (only accessible when logged in) */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/leads/:leadId" element={<LeadDetailsPage />} />
-              <Route path="/new-lead" element={<NewLeadForm />} />
-            </Route>
+      <BrowserRouter>
+        <Toaster position="bottom-left" />
+        <div className="min-h-screen bg-gray-50">
+          <main>
+            <Routes>
+              {/* Landing Page as the default route */}
+              <Route path="/" element={<LandingPage />} />
 
-            {/* Auth routes */}
-            <Route element={<PreventedRoutes/>}>
-              <Route path="/sign-up" element={<SignUp />} />
-              <Route path="/login" element={<LogIn />} />
-            </Route>
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
+              <Route element={<ProtectedRoutes />}>
+                {/* Protected routes (only accessible when logged in) */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/leads/:leadId" element={<LeadDetailsPage />} />
+                <Route path="/new-lead" element={<NewLeadForm />} />
+              </Route>
+
+              {/* Auth routes */}
+              <Route element={<PreventedRoutes />}>
+                <Route path="/sign-up" element={<SignUp />} />
+                <Route path="/login" element={<LogIn />} />
+              </Route>
+            </Routes>
+          </main>
+        </div>
+      </BrowserRouter>
+
+    </GoogleOAuthProvider>
   );
 }
 
