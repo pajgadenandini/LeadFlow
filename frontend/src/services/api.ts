@@ -1,24 +1,24 @@
-import { useAuth, getAuthHeaders } from '@/context/AuthContext';
-import { Lead, Comment, LeadStatus, ILead } from '../types/lead.types';
-import { LoginErrorResponse, LogInFormErrors } from '../types/login.types';
-import { SignUpFormErrors } from '../types/signup.types';
-
+import { useAuth, getAuthHeaders } from "@/context/AuthContext";
+import { Lead, Comment, LeadStatus, ILead } from "../types/lead.types";
+import { LoginErrorResponse, LogInFormErrors } from "../types/login.types";
+import { SignUpFormErrors } from "../types/signup.types";
 
 // Base URL from environment variable
-const BASE_URL = import.meta.env.VITE_APP_BACKEND_BASE_URL || 'http://localhost:5000/api';
+const BASE_URL =
+  import.meta.env.VITE_APP_BACKEND_BASE_URL || "http://localhost:5000/api";
 
 // Helper function to convert ILead (from backend) to Lead (frontend type)
 const convertToLead = (backendLead: any): Lead => {
   return {
     id: backendLead.id.toString(),
-    name: backendLead.clientName || '',
-    email: backendLead.clientEmail || '',
-    phone: backendLead.contactNo || '',
-    website: backendLead.urlLink || '',
-    source: backendLead.source || '',
-    description: backendLead.description || '',
-    currentStatus: backendLead.currentStatus as LeadStatus || 'New',
-    profileImage: backendLead.profileImage || undefined
+    name: backendLead.clientName || "",
+    email: backendLead.clientEmail || "",
+    phone: backendLead.contactNo || "",
+    website: backendLead.urlLink || "",
+    source: backendLead.source || "",
+    description: backendLead.description || "",
+    currentStatus: (backendLead.currentStatus as LeadStatus) || "New",
+    profileImage: backendLead.profileImage || undefined,
   };
 };
 
@@ -28,25 +28,25 @@ const convertToComments = (backendActivities: any[]): Comment[] => {
     return [];
   }
 
-  return backendActivities.map(activity => ({
+  return backendActivities.map((activity) => ({
     id: activity.id.toString(),
     leadId: activity.leadId.toString(),
     userId: activity.userId.toString(),
-    userName: activity.user ? activity.user.name : 'Unknown User', // Assuming user is included in the response
-    status: activity.status as LeadStatus || 'New',
-    text: activity.comment || '',
-    timestamp: new Date(activity.timestamp || activity.createdAt).toISOString()
+    userName: activity.user ? activity.user.name : "Unknown User", // Assuming user is included in the response
+    status: (activity.status as LeadStatus) || "New",
+    text: activity.comment || "",
+    timestamp: new Date(activity.timestamp || activity.createdAt).toISOString(),
   }));
 };
 
 export const api = {
   // GET API to fetch lead details
   fetchLeadDetails: async (leadId: string): Promise<Lead> => {
-    console.log('Fetching lead details for:', leadId);
+    // console.log('Fetching lead details for:', leadId);
     try {
       const response = await fetch(`${BASE_URL}/leadDetails/${leadId}`, {
-        method: 'GET',
-        headers: getAuthHeaders()
+        method: "GET",
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -56,19 +56,22 @@ export const api = {
       const data = await response.json();
       return convertToLead(data);
     } catch (error) {
-      console.error('Error fetching lead details:', error);
+      console.error("Error fetching lead details:", error);
       throw error;
     }
   },
 
   // PUT API to update lead status
-  updateLeadStatus: async (leadId: string, newStatus: LeadStatus): Promise<Lead> => {
-    console.log(`Updating lead ${leadId} status to ${newStatus}`);
+  updateLeadStatus: async (
+    leadId: string,
+    newStatus: LeadStatus
+  ): Promise<Lead> => {
+    // console.log(`Updating lead ${leadId} status to ${newStatus}`);
     try {
       const response = await fetch(`${BASE_URL}/leadDetails/${leadId}/status`, {
-        method: 'PUT',
+        method: "PUT",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
@@ -78,19 +81,22 @@ export const api = {
       const data = await response.json();
       return convertToLead(data);
     } catch (error) {
-      console.error('Error updating lead status:', error);
+      console.error("Error updating lead status:", error);
       throw error;
     }
   },
 
   // GET API to fetch comments
   fetchComments: async (leadId: string): Promise<Comment[]> => {
-    console.log('Fetching comments for lead:', leadId);
+    // console.log('Fetching comments for lead:', leadId);
     try {
-      const response = await fetch(`${BASE_URL}/leadDetails/${leadId}/activities`, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
+      const response = await fetch(
+        `${BASE_URL}/leadDetails/${leadId}/activities`,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch comments: ${response.statusText}`);
@@ -99,7 +105,7 @@ export const api = {
       const data = await response.json();
       return convertToComments(data);
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error("Error fetching comments:", error);
       // Return empty array in case of error to prevent UI crashes
       return [];
     }
@@ -107,18 +113,18 @@ export const api = {
 
   // POST API to add a new comment
   addComment: async (leadId: string, comment: Comment): Promise<Comment> => {
-    console.log('Adding comment for lead:', leadId, comment);
+    // console.log('Adding comment for lead:', leadId, comment);
     try {
       const response = await fetch(`${BASE_URL}/activity/activities`, {
-        method: 'POST',
+        method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({
           timestamp: new Date().toISOString(),
           leadId: leadId,
           userId: comment.userId,
           status: comment.status,
-          comment: comment.text
-        })
+          comment: comment.text,
+        }),
       });
 
       if (!response.ok) {
@@ -133,28 +139,33 @@ export const api = {
         userName: comment.userName, // We use the provided userName since the API might not return it
         status: data.status as LeadStatus,
         text: data.comment || comment.text,
-        timestamp: new Date(data.timestamp || data.createdAt).toISOString()
+        timestamp: new Date(data.timestamp || data.createdAt).toISOString(),
       };
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error("Error adding comment:", error);
       throw error;
     }
   },
 
   // User registration and login methods (unchanged)
-  registerUser: async (name: string, email: string, password: string, setErrors: React.Dispatch<React.SetStateAction<SignUpFormErrors>>): Promise<boolean> => {
-    console.log("Registering user:", { name, email });
+  registerUser: async (
+    name: string,
+    email: string,
+    password: string,
+    setErrors: React.Dispatch<React.SetStateAction<SignUpFormErrors>>
+  ): Promise<boolean> => {
+    // console.log("Registering user:", { name, email });
 
     const payload = {
       name: name,
       email: email,
-      password: password
-    }
+      password: password,
+    };
 
     const newErrors = {
-      name: '',
-      email: '',
-      password: '',
+      name: "",
+      email: "",
+      password: "",
     };
 
     try {
@@ -162,19 +173,19 @@ export const api = {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
-      })
+      });
 
-      const user = await response.json()
+      const user = await response.json();
 
       if (response.ok) {
-        return true
+        return true;
       } else {
-        newErrors.email = user.error
-        setErrors(newErrors)
+        newErrors.email = user.error;
+        setErrors(newErrors);
       }
 
-      return false
-    } catch (error: any) {
+      return false;
+    } catch (error) {
       throw new Error(error);
     }
   },
@@ -185,22 +196,22 @@ export const api = {
     setErrors: React.Dispatch<React.SetStateAction<LogInFormErrors>>,
     login: (token: string, user: any) => void
   ): Promise<LoginErrorResponse> => {
-    console.log("Logging user:", { email });
+    // console.log("Logging user:", { email });
 
     const payload = {
       email: email,
-      password: password
-    }
+      password: password,
+    };
 
     try {
       const response = await fetch(`${BASE_URL}/users/login`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
-      })
-      console.log(response);
+      });
+      // console.log(response);
 
       const res = await response.json();
 
@@ -216,16 +227,16 @@ export const api = {
 
       return {
         success: false,
-        message: res.error || 'Login failed',
-        type: 'error'
+        message: res.error || "Login failed",
+        type: "error",
       };
-    } catch (error: any) {
-      console.error('Login error:', error);
+    } catch (error) {
+      console.error("Login error:", error);
       return {
         success: false,
-        message: error.message || 'An unexpected error occurred',
-        type: 'error'
+        message: error.message || "An unexpected error occurred",
+        type: "error",
       };
     }
-  }
+  },
 };
