@@ -27,7 +27,7 @@ const ChatbotPopup = ({ isClosing }: ChatbotPopupProps) => {
 
   return (
     <div
-      className={`fixed bottom-18 sm:bottom-20 right-2 sm:right-6 w-[95%] sm:w-96 md:max-w-lg lg:max-w-xl xl:max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden z-40 transition-all duration-300 transform 
+      className={`fixed bottom-18 sm:bottom-20 right-2 sm:right-6 w-[95%] sm:w-100 md:max-w-lg lg:max-w-xl xl:max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden z-40 transition-all duration-300 transform 
       ${
         isClosing
           ? "scale-95 opacity-0 pointer-events-none"

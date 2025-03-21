@@ -1,4 +1,5 @@
 import { Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   sender: "AI" | "user";
@@ -28,7 +29,7 @@ const ChatMessages = ({ messages }: ChatMessagesProps) => {
           } animate-fadeIn`}
         >
           <div
-            className={`max-w-[80%] md:max-w-[70%] lg:max-w-[60%] rounded-2xl px-4 py-3 shadow-md break-words
+            className={`max-w-[100%] md:max-w-[100%] lg:max-w-[100%] rounded-2xl px-4 py-3 shadow-md break-words
               ${
                 msg.sender === "user"
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
@@ -62,7 +63,7 @@ const ChatMessages = ({ messages }: ChatMessagesProps) => {
               </span>
             </div>
             <p className="text-sm md:text-base whitespace-pre-wrap leading-relaxed">
-              {msg.text}
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
             </p>
           </div>
         </div>
