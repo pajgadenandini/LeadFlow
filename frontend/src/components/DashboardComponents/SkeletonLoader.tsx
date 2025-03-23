@@ -19,17 +19,18 @@ export default function SkeletonLoader({ isMobile = false }: { isMobile?: boolea
 
   return (
     <TableRow className="h-12">
-      {Array(5).fill(null).map((_, index) => (
-        <TableCell key={index}>
-          <div className="w-full h-5 bg-gray-300 animate-pulse rounded-md"></div>
-        </TableCell>
-      ))}
-      <TableCell className="text-right">
-        <div className="flex items-center gap-x-2 justify-end w-full">
-          <div className="w-15 h-6 bg-gray-300 animate-pulse rounded-md"></div>
-          <div className="w-6 h-6 bg-gray-300 animate-pulse rounded-md"></div>
-        </div>
-      </TableCell>
-    </TableRow>
+  {Array(5).fill(null).map((_, index) => (
+    <TableCell key={index} className="py-4">
+      <div className="w-full h-6 bg-gray-300 animate-pulse rounded-md"></div>
+    </TableCell>
+  ))}
+  <TableCell className="py-4 text-right">
+    <div className="flex items-center gap-x-2 justify-end w-full">
+      <div className="w-15 h-6 bg-gray-300 animate-pulse rounded-md"></div>
+      <div className="w-6 h-6 bg-gray-300 animate-pulse rounded-md"></div>
+    </div>
+  </TableCell>
+</TableRow>
+
   );
 }
