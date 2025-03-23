@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import DataTable from "../../components/DashboardComponents/DataTable";
+import DataRenderer from "../../components/DashboardComponents/DataRenderer";
 import SearchBar from "../../components/DashboardComponents/SearchBar";
 import Pagination from "../../components/DashboardComponents/Pagination";
 import { ChatbotIcon } from "../../components/AiChatBot";
@@ -40,7 +40,7 @@ export default function Dashboard() {
   );
 
   // Fetch leads
-  const { leads, loading, error, totalPages, refetch } = useLeads(
+  const { leads, loading, totalPages, refetch } = useLeads(
     currentPage,
     searchTerm,
     sortBy,
@@ -114,16 +114,15 @@ export default function Dashboard() {
             <h2 className="text-2xl font-semibold">Lead Dashboard</h2>
             <NewLeadButton />
           </div>
-          <div className="flex flex-wrap items-center gap-4 w-full mb-6">
-            <div className="flex-grow">
+          <div className="flex flex-nowrap items-center gap-4 w-full mb-6">
+            <div className="w-full max-w-[400px]">
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            
+            </div>
             <FilterLeads onApplyFilters={setFilters} onResetFilters={() => setFilters({})} aria-label="Filter leads" />
-          </div>
           </div>
 
           {/* Show infinite scroll for mobile, pagination for desktop */}
-          <DataTable
+          <DataRenderer
             data={loading ? [] : leads}
             onDelete={confirmDelete}
             onSortChange={handleSortChange}
@@ -139,11 +138,11 @@ export default function Dashboard() {
             </div>
           ) : (
             <div ref={observerRef} className="h-10 w-full flex justify-center items-center">
-              {loading && <Loader/>}
+              {loading && <Loader />}
             </div>
           )}
 
-          {!loading && leads.length === 0 && <div className="text-center text-gray-500 mt-4">No records present</div>}
+          {/* {!loading && leads.length === 0 && <div className="text-center text-gray-500 mt-4">No records present</div>} */}
 
           <ChatbotIcon />
           <DeleteConfirmationDialog open={openConfirm} onClose={() => setOpenConfirm(false)} onConfirm={handleDeleteConfirmed} />
