@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Check } from "lucide-react";
 
 interface StatusDropdownProps {
   onSelect?: (status: string) => void;
+  placeholder?: string;
 }
 
-const StatusDropdown: React.FC<StatusDropdownProps> = ({ onSelect = () => {} }) => {
+const StatusDropdown: React.FC<StatusDropdownProps> = ({
+  onSelect = () => {},
+  placeholder = "Status",
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const statusOptions = [
     { value: "", label: "All" },
@@ -24,34 +29,58 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ onSelect = () => {} }) 
     onSelect(status);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative w-full max-w-[150px]">
+    <div ref={dropdownRef} className="relative w-full max-w-[200px]">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 cursor-pointer p-2 rounded-md hover:bg-gray-200 transition-all w-full text-left"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex justify-center items-center gap-2 cursor-pointer p-2 rounded-md 
+                   hover:bg-gray-200 transition-all w-full"
         aria-label="Filter by Status"
       >
-        <span className="font-medium truncate">{selectedStatus ? statusOptions.find(option => option.value === selectedStatus)?.label : "Status"}</span>
-        <ChevronDown
-          className={`transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-500" : "rotate-0 text-blue-500"}`}
-          size={20}
-          strokeWidth={2}
-        />
+        <div className="flex items-center gap-1">
+          <span className="font-medium truncate">
+            {selectedStatus
+              ? statusOptions.find((option) => option.value === selectedStatus)?.label
+              : placeholder}
+          </span>
+          <ChevronDown
+            className={`transition-transform duration-300 ${
+              isOpen ? "rotate-180 text-blue-500" : "rotate-0 text-blue-500"
+            }`}
+            size={20}
+            strokeWidth={2}
+          />
+        </div>
       </button>
 
       {isOpen && (
         <div
           className="absolute z-10 w-full bg-white border border-gray-300 
                      rounded-md shadow-lg mt-1 py-1 max-h-60 overflow-y-auto 
-                     transition-all duration-300 origin-top scale-y-100 opacity-100"
+                     transition-all duration-200 origin-top scale-y-100 opacity-100"
         >
           {statusOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => handleStatusChange(option.value)}
-              className={`w-full flex items-center px-3 py-1 text-sm text-left 
+              className={`w-full flex items-center px-3 py-2 text-sm justify-start
                           transition-colors duration-200 ${
-                            selectedStatus === option.value ? "bg-blue-50 text-blue-600" : "hover:bg-gray-100"
+                            selectedStatus === option.value
+                              ? "bg-blue-50 text-blue-600 font-medium"
+                              : "hover:bg-gray-100"
                           }`}
             >
               {option.label}

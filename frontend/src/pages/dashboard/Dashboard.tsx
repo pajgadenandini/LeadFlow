@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "react-hot-toast";
-import DataTable from "../../components/DashboardComponents/DataTable";
+import DataRenderer from "../../components/DashboardComponents/DataRenderer";
 import SearchBar from "../../components/DashboardComponents/SearchBar";
 import Pagination from "../../components/DashboardComponents/Pagination";
 import { ChatbotIcon } from "../../components/AiChatBot";
@@ -11,7 +11,7 @@ import NewLeadButton from "@/components/DashboardComponents/NewLeadButton";
 import DeleteConfirmationDialog from "../../components/DashboardComponents/DeleteConfirmationDialog";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import { useMemo } from "react";
+
 import Loader from "@/components/ui/Loader";
 
 export default function Dashboard() {
@@ -22,8 +22,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState({});
   const [openConfirm, setOpenConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const memoizedFilters = useMemo(() => ({ ...filters, status: statusFilter }), [filters, statusFilter]);
+  const [statusFilter, setStatusFilter] = useState<string>("");
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const observerRef = useRef<HTMLDivElement | null>(null); // Ref for the infinite scroll trigger
@@ -35,8 +34,13 @@ export default function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const memoizedFilters = useMemo(
+    () => ({ ...filters, status: statusFilter }),
+    [filters, statusFilter]
+  );
+
   // Fetch leads
-  const { leads, loading, error, totalPages, refetch } = useLeads(
+  const { leads, loading, totalPages, refetch } = useLeads(
     currentPage,
     searchTerm,
     sortBy,
@@ -103,20 +107,22 @@ export default function Dashboard() {
     <>
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="container mx-auto p-4 flex flex-col flex-grow">
+
+        <div className="w-full max-w-6xl mx-auto px-10 sm:px-16 md:px-0 lg:px-32 xl:px-10 py-4 flex flex-col flex-grow">
+
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
             <h2 className="text-2xl font-semibold">Lead Dashboard</h2>
             <NewLeadButton />
           </div>
-          <div className="flex flex-wrap items-center gap-4 w-full mb-6">
-            <div className="flex-grow">
+          <div className="flex flex-nowrap items-center gap-4 w-full mb-6">
+            <div className="w-full max-w-[400px]">
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             </div>
-            <FilterLeads onApplyFilters={setFilters} onResetFilters={() => setFilters({})} />
+            <FilterLeads onApplyFilters={setFilters} onResetFilters={() => setFilters({})} aria-label="Filter leads" />
           </div>
 
           {/* Show infinite scroll for mobile, pagination for desktop */}
-          <DataTable
+          <DataRenderer
             data={loading ? [] : leads}
             onDelete={confirmDelete}
             onSortChange={handleSortChange}
@@ -132,16 +138,17 @@ export default function Dashboard() {
             </div>
           ) : (
             <div ref={observerRef} className="h-10 w-full flex justify-center items-center">
-              {loading && <Loader/>}
+              {loading && <Loader />}
             </div>
           )}
 
-          {!loading && leads.length === 0 && <div className="text-center text-gray-500 mt-4">No records present</div>}
+          {/* {!loading && leads.length === 0 && <div className="text-center text-gray-500 mt-4">No records present</div>} */}
 
           <ChatbotIcon />
           <DeleteConfirmationDialog open={openConfirm} onClose={() => setOpenConfirm(false)} onConfirm={handleDeleteConfirmed} />
         </div>
       </div>
+
       <Footer />
     </>
   );
