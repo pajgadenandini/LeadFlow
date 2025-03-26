@@ -7,6 +7,6 @@ const router = express.Router();
 router.post("/oauth/callback", oauthCallback); // Oauth Callback
 
 // GitHub OAuth callback route
-router.get("/oauth/github/callback", oauthCallback);
+router.post("/oauth/github/callback", oauthCallback);
 
 export default router;

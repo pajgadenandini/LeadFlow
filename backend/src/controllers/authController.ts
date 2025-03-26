@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { loginUser, oauthService, registerUser } from "../services/authServices";
+import { loginUser, oauthService, registerUser, githubOAuthService } from "../services/authServices";
 import logger from "../logger";
 
 export const registerHandler = async (req: Request, res: Response) => {
@@ -47,9 +47,15 @@ export const validateToken = (req: Request, res: Response) => {
 
 export const oauthCallback = async (req: Request, res: Response) => {
   try {
-    const { email, name, provider, image } = req.body;
+    const { email, name, provider, image, code } = req.body;
 
-    const jsonResp = await oauthService(email, name, provider, image);
+    let jsonResp;
+
+    if (provider === 'github') {
+      jsonResp = await githubOAuthService(email, name);
+    } else {
+      jsonResp = await oauthService(email, name, provider, image);
+    }
 
     // Create and assign a token
     res.status(200).json(jsonResp);

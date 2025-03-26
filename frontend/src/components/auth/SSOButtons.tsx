@@ -69,19 +69,11 @@ const SSOButtons: React.FC = () => {
             githubButton.className = 'github-button';
             githubButton.onclick = async () => {
                 try {
-                    const authResponse = await authService.handleOAuthSignIn({
-                        email: 'github@example.com', // Replace with actual GitHub email
-                        name: 'GitHub User', // Replace with actual GitHub user name
-                        provider: 'github'
-                    });
+                    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+                    const redirectUri = `${window.location.origin}/auth/callback/github`;
+                    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
 
-                    if (authResponse.success && authResponse.token) {
-                        login(authResponse.token, authResponse.user);
-                        navigate('/dashboard');
-                        toast.success('Successfully logged in!');
-                    } else {
-                        toast.error('Failed to authenticate');
-                    }
+                    window.location.href = githubAuthUrl;
                 } catch (error) {
                     console.error('GitHub OAuth error:', error);
                     toast.error('GitHub login failed');
