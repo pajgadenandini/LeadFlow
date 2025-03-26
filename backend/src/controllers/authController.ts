@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response,NextFunction,RequestHandler } from "express";
 import { loginUser, oauthService, registerUser, githubOAuthService } from "../services/authServices";
 import logger from "../logger";
 
@@ -51,11 +51,7 @@ export const oauthCallback = async (req: Request, res: Response) => {
 
     let jsonResp;
 
-    if (provider === 'github') {
-      jsonResp = await githubOAuthService(email, name);
-    } else {
-      jsonResp = await oauthService(email, name, provider, image);
-    }
+    jsonResp = await oauthService(email, name, provider, image);
 
     // Create and assign a token
     res.status(200).json(jsonResp);
@@ -80,5 +76,32 @@ export const githubOAuthSignIn = async (req: Request, res: Response) => {
             success: false,
             error: 'GitHub OAuth sign-in failed'
         });
+    }
+};
+
+
+export const githubOAuthCallback: RequestHandler = async (req, res) => {
+    try {
+        const { code } = req.body;
+        
+        if (!code) {
+            res.status(400).json({
+                success: false,
+                error: 'GitHub authorization code is required'
+            });
+            return;
+        }
+
+        const result = await githubOAuthService(code);
+        res.status(200).json(result);
+        return;
+
+    } catch (error) {
+        console.error('GitHub OAuth error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'GitHub authentication failed'
+        });
+        return;
     }
 };

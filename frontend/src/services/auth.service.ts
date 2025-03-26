@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { OAuthUser, AuthResponse } from '../types/auth.types';
+import { log } from 'console';
 
 const API_URL = import.meta.env.VITE_APP_BACKEND_BASE_URL || 'http://localhost:5000/api';
 
@@ -28,6 +29,8 @@ export const authService = {
 
     async handleGitHubOAuthSignIn(code: string): Promise<AuthResponse> {
         try {
+            console.log(code);
+            
             const response = await axios.post(
                 `${API_URL}/auth/oauth/github`,
                 { code },
@@ -38,6 +41,7 @@ export const authService = {
                     }
                 }
             );
+            console.log(response);
             return response.data;
         } catch (error) {
             console.error('GitHub OAuth error:', error);
