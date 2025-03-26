@@ -29,7 +29,7 @@ export const authService = {
     async handleGitHubOAuthSignIn(code: string): Promise<AuthResponse> {
         try {
             const response = await axios.post(
-                `${API_URL}/auth/oauth/github/callback`,
+                `${API_URL}/auth/oauth/github`,
                 { code },
                 {
                     withCredentials: true,
