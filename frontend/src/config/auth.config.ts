@@ -8,7 +8,7 @@ export const oauthConfig = {
     access_type: 'online'
   },
   github: {
-    clientId: import.meta.env.REACT_APP_GITHUB_CLIENT_ID!,
+    clientId: import.meta.env.VITE_APP_GITHUB_CLIENT_ID!,
     redirectUri: `${window.location.origin}/auth/callback/github`
   },
   microsoft: {
