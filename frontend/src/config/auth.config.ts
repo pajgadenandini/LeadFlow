@@ -9,7 +9,7 @@ export const oauthConfig = {
   },
   github: {
     clientId: import.meta.env.VITE_APP_GITHUB_CLIENT_ID!,
-    redirectUri: `${window.location.origin}/auth/callback/github`
+    redirectUri: `${import.meta.env.VITE_APP_FRONTEND_BASE_URL}/auth/callback/github`
   },
   microsoft: {
     clientId: import.meta.env.REACT_APP_MICROSOFT_CLIENT_ID!,

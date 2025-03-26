@@ -12,6 +12,7 @@ import NewLeadForm from "./pages/NewLeadForm";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import PreventedRoutes from "./utils/PreventedRoutes";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import GitHubCallback from "./pages/auth/GitHubCallback";
 
 function App() {
   const { isLoggedIn } = useAuth(); // Get the authentication status
@@ -45,6 +46,7 @@ function App() {
               <Route element={<PreventedRoutes />}>
                 <Route path="/sign-up" element={<SignUp />} />
                 <Route path="/login" element={<LogIn />} />
+                <Route path="/auth/callback/github" element={<GitHubCallback />} />
               </Route>
             </Routes>
           </main>

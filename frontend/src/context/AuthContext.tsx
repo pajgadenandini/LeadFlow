@@ -1,9 +1,9 @@
-// src/context/AuthContext.tsx
 import { User } from "@/types/common.types";
 import { jwtDecode } from 'jwt-decode';
 import React, { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate } from "react-router-dom";
+import { authService } from "@/services/auth.service";
 
 // Define types for Auth State
 
@@ -158,12 +158,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success("Logged out Successfully", { duration: 5000, position: "bottom-left" });
   }
 
+  const handleGitHubOAuthCallback = async (code: string) => {
+    try {
+      const authResponse = await authService.handleGitHubOAuthSignIn(code);
+
+      if (authResponse.success && authResponse.token) {
+        login(authResponse.token, authResponse.user);
+        toast.success('Successfully logged in!');
+      } else {
+        toast.error('Failed to authenticate');
+      }
+    } catch (error) {
+      console.error('GitHub OAuth error:', error);
+      toast.error('GitHub login failed');
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       isLoggedIn,
       user,
       login,
-      logout
+      logout,
+      handleGitHubOAuthCallback
     }}>
       {children}
     </AuthContext.Provider>
