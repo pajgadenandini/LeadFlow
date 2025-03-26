@@ -90,3 +90,25 @@ export const oauthService = async (email: string, name: string, provider?: strin
 
     return { success: true, message: "Login Successful", user: userWithoutPassword, token };
 }
+
+export const githubOAuthService = async (email: string, name: string) => {
+    let user = await UserModel.findOne({ where: { email } });
+
+    if (!user) {
+        // Create new user if doesn't exist
+        user = await UserModel.create({
+            email,
+            name
+        });
+    }
+
+    // Create and assign a token
+    const token = jwt.sign({ id: user.id }, JWT_SECRET,
+        { expiresIn: SESSION_TIMEOUT }
+    );
+
+    // removing password before sending response
+    const { password: _, ...userWithoutPassword } = user.dataValues;
+
+    return { success: true, message: "Login Successful", user: userWithoutPassword, token };
+};

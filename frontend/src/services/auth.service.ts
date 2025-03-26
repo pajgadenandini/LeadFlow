@@ -24,5 +24,27 @@ export const authService = {
                 error: 'OAuth authentication failed'
             };
         }
+    },
+
+    async handleGitHubOAuthSignIn(code: string): Promise<AuthResponse> {
+        try {
+            const response = await axios.post(
+                `${API_URL}/auth/oauth/github/callback`,
+                { code },
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('GitHub OAuth error:', error);
+            return {
+                success: false,
+                error: 'GitHub OAuth authentication failed'
+            };
+        }
     }
 };

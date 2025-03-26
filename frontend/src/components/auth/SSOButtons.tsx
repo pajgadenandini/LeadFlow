@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 declare global {
     interface Window {
         google: any;
+        github: any;
     }
 }
 
@@ -16,7 +17,9 @@ const SSOButtons: React.FC = () => {
     const { login } = useAuth();
 
     const googleButtonRef = useRef(null); // Create a ref
-    // oauth code
+    const githubButtonRef = useRef(null); // Create a ref for GitHub button
+
+    // Google OAuth code
     useEffect(() => {
         /* global google */
         if (googleButtonRef.current) {
@@ -58,9 +61,40 @@ const SSOButtons: React.FC = () => {
         }
     }, [login, navigate]);
 
+    // GitHub OAuth code
+    useEffect(() => {
+        if (githubButtonRef.current) {
+            const githubButton = document.createElement('button');
+            githubButton.innerText = 'Sign in with GitHub';
+            githubButton.className = 'github-button';
+            githubButton.onclick = async () => {
+                try {
+                    const authResponse = await authService.handleOAuthSignIn({
+                        email: 'github@example.com', // Replace with actual GitHub email
+                        name: 'GitHub User', // Replace with actual GitHub user name
+                        provider: 'github'
+                    });
+
+                    if (authResponse.success && authResponse.token) {
+                        login(authResponse.token, authResponse.user);
+                        navigate('/dashboard');
+                        toast.success('Successfully logged in!');
+                    } else {
+                        toast.error('Failed to authenticate');
+                    }
+                } catch (error) {
+                    console.error('GitHub OAuth error:', error);
+                    toast.error('GitHub login failed');
+                }
+            };
+            githubButtonRef.current.appendChild(githubButton);
+        }
+    }, [login, navigate]);
+
     return (
         <div className="space-y-4 mb-6 flex justify-center">
             <div ref={googleButtonRef}></div>
+            <div ref={githubButtonRef}></div>
         </div>
     );
 };
