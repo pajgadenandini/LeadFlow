@@ -67,3 +67,18 @@ export const oauthCallback = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const githubOAuthSignIn = async (req: Request, res: Response) => {
+    try {
+        const clientId = process.env.GITHUB_CLIENT_ID;
+        const redirectUri = `${process.env.FRONTEND_BASE_URL}/auth/callback/github`;
+        const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
+
+        res.redirect(githubAuthUrl);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'GitHub OAuth sign-in failed'
+        });
+    }
+};

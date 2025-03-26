@@ -22,7 +22,11 @@ const GitHubCallback: React.FC = () => {
             navigate('/dashboard');
             toast.success('Successfully logged in!');
           } else {
-            toast.error('Failed to authenticate');
+            if (authResponse.error === 'GitHub OAuth authentication failed') {
+              toast.error('GitHub OAuth authentication failed. Please try again.');
+            } else {
+              toast.error('Failed to authenticate');
+            }
             navigate('/login');
           }
         } catch (error) {
